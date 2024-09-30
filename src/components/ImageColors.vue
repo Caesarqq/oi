@@ -134,15 +134,24 @@ export default {
     },
     updateColor(event) {
       if (this.currentTool !== 'pipette') return;
-      const rect = this.pixelSearchRef.$refs.canvas.getBoundingClientRect();
-      const x = Math.floor((event.clientX - rect.left) * (this.pixelSearchRef.$refs.canvas.width / rect.width));
-      const y = Math.floor((event.clientY - rect.top) * (this.pixelSearchRef.$refs.canvas.height / rect.height));
-      const colorData = this.pixelSearchRef.getPixelColorAtCoordinates(x, y);
-      const hex = `#${colorConvert.rgb.hex(colorData.r, colorData.g, colorData.b)}`;
-      const rgb = `rgb(${colorData.r}, ${colorData.g}, ${colorData.b})`;
-      const xyz = colorConvert.rgb.xyz(colorData.r, colorData.g, colorData.b);
-      const lab = colorConvert.rgb.lab(colorData.r, colorData.g, colorData.b);
-
+      
+      const rect = this.pixelSearchRef.getBoundingClientRect();
+      const x = Math.floor(
+        (event.clientX - rect.left) * (this.pixelSearchRef.width / rect.width)
+      );
+      const y = Math.floor(
+        (event.clientY - rect.top) * (this.pixelSearchRef.height / rect.height)
+      );
+      
+      const ctx = this.pixelSearchRef.getContext('2d');
+      const imageData = ctx.getImageData(x, y, 1, 1);
+      const colorData = imageData.data;
+      
+      const hex = `#${colorConvert.rgb.hex(colorData[0], colorData[1], colorData[2])}`;
+      const rgb = `rgb(${colorData[0]}, ${colorData[1]}, ${colorData[2]})`;
+      const xyz = colorConvert.rgb.xyz(colorData[0], colorData[1], colorData[2]);
+      const lab = colorConvert.rgb.lab(colorData[0], colorData[1], colorData[2]);
+      
       const color = {
         hex: hex,
         rgb: rgb,
@@ -151,7 +160,7 @@ export default {
         x: x,
         y: y
       };
-
+      
       if (event.altKey || event.ctrlKey || event.shiftKey) {
         this.color2 = color;
       } else {
@@ -220,9 +229,9 @@ export default {
       this.updateCanvasPosition();
     },
     updateCanvasPosition() {
-      const canvas = this.pixelSearchRef.$refs.canvas;
-      canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
-    }
+  const canvas = this.pixelSearchRef;
+  canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
+  }
   },
   mounted() {
     window.addEventListener('click', this.updateColor);

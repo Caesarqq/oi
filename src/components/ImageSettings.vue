@@ -197,10 +197,10 @@ watch: {
 }
 };
 </script>
-  
+    
 <style>
 .padding {
     padding-left: 50px;
 }
 </style>
-  
+    

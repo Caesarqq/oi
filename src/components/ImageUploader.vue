@@ -75,8 +75,8 @@ export default {
         y: 0,
         color: { r: 0, g: 0, b: 0 }
       },
-      dx: 0,  // Начальные координаты X для изображения
-      dy: 0   // Начальные координаты Y для изображения
+      dx: 0,  
+      dy: 0   
     };
   },
   methods: {
@@ -126,7 +126,6 @@ export default {
       const scaledWidth = this.imageWidth;
       const scaledHeight = this.imageHeight;
 
-      // Вычисляем начальные координаты для изображения
       this.dx = (canvasWidth - scaledWidth) / 2;
       this.dy = (canvasHeight - scaledHeight) / 2;
 

@@ -10,8 +10,8 @@
     <v-btn @click="toggleFilterModal">Фильтрация</v-btn>
     <v-btn @click="saveImage">Сохранить</v-btn>
     </div>
-     <div class="wrapper">
-      <aside-panel
+        <div class="wrapper">
+        <aside-panel
         @scale="scaleImage"
         :x="x"
         :y="y"
@@ -19,8 +19,8 @@
         :width="width"
         :resl="resl"
         :showData="showData"
-      />
-      <div class="drawing">
+        />
+        <div class="drawing">
         <canvas
         ref="canvas"
         width="1250"
@@ -30,7 +30,7 @@
         @mousemove="handleMouseMove"
         @mousewheel="handleMouseWheel"
         />
-      </div>
+        </div>
     <pippet-modal
         v-if="showPippetModal"
         @toggle="togglePippetModal"
@@ -192,11 +192,11 @@ methods: {
     this.resl = null;
     },
     loadImage(image) {
-      this.startImage = image;
-      this.draw();
+        this.startImage = image;
+        this.draw();
     },
     draw() {
-      if (this.startImage) {
+        if (this.startImage) {
         this.height = this.startImage.height;
         this.width = this.startImage.width;
 
@@ -213,7 +213,7 @@ methods: {
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.startImage, this.dx, this.dy, newWidth, newHeight);
-      }
+        }
     },
     resizeImage() {
     const newWidth = this.$refs.scaleModal.outputW;

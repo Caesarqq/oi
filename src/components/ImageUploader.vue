@@ -34,8 +34,8 @@
       v-if="showFilters"
       @close="showFilters = false"
       :ctxRef="$refs.pixelSearch.getContext('2d')"
-      :dx="0"
-      :dy="0"
+      :dx="dx"
+      :dy="dy"
       :nowW="imageWidth"
       :nowH="imageHeight"
       :startImage="image"
@@ -74,7 +74,9 @@ export default {
         x: 0,
         y: 0,
         color: { r: 0, g: 0, b: 0 }
-      }
+      },
+      dx: 0,  // Начальные координаты X для изображения
+      dy: 0   // Начальные координаты Y для изображения
     };
   },
   methods: {
@@ -124,8 +126,9 @@ export default {
       const scaledWidth = this.imageWidth;
       const scaledHeight = this.imageHeight;
 
-      const x = (canvasWidth - scaledWidth) / 2;
-      const y = (canvasHeight - scaledHeight) / 2;
+      // Вычисляем начальные координаты для изображения
+      this.dx = (canvasWidth - scaledWidth) / 2;
+      this.dy = (canvasHeight - scaledHeight) / 2;
 
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
@@ -135,7 +138,7 @@ export default {
       if (this.interpolation === 'nearest') {
         this.drawNearestNeighbor(ctx, this.image, scaledWidth, scaledHeight);
       } else if (this.interpolation === 'none') {
-        ctx.drawImage(this.image, x, y, scaledWidth, scaledHeight);
+        ctx.drawImage(this.image, this.dx, this.dy, scaledWidth, scaledHeight);
       }
     },
     drawNearestNeighbor(ctx, img, width, height) {

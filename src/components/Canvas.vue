@@ -10,18 +10,17 @@
     <v-btn @click="toggleFilterModal">Фильтрация</v-btn>
     <v-btn @click="saveImage">Сохранить</v-btn>
     </div>
-    <div class="wrapper">
-    <aside-panel
+     <div class="wrapper">
+      <aside-panel
         @scale="scaleImage"
         :x="x"
-        :state="state"
         :y="y"
         :height="height"
         :width="width"
         :resl="resl"
         :showData="showData"
-    />
-    <div class="drawing">
+      />
+      <div class="drawing">
         <canvas
         ref="canvas"
         width="1250"
@@ -31,7 +30,7 @@
         @mousemove="handleMouseMove"
         @mousewheel="handleMouseWheel"
         />
-    </div>
+      </div>
     <pippet-modal
         v-if="showPippetModal"
         @toggle="togglePippetModal"
@@ -112,6 +111,8 @@ data() {
     startX: null,
     startY: null,
     state: '',
+    dx: 0, // Начальная координата X
+    dy: 0, // Начальная координата Y
     resl: null,
     isShift: false
     };
@@ -191,22 +192,28 @@ methods: {
     this.resl = null;
     },
     loadImage(image) {
-    this.startImage = image;
-    this.draw();
+      this.startImage = image;
+      this.draw();
     },
     draw() {
-    if (this.startImage) {
+      if (this.startImage) {
         this.height = this.startImage.height;
         this.width = this.startImage.width;
+
+        // Рассчитываем масштаб и начальные координаты
         const scale = Math.min(this.canvas.width / this.width, this.canvas.height / this.height);
         const newWidth = this.width * scale;
         const newHeight = this.height * scale;
+
         this.nowW = newWidth;
         this.nowH = newHeight;
-        this.dx = (this.canvas.width - newWidth) / 2;
-        this.dy = (this.canvas.height - newHeight) / 2;
+
+        this.dx = (this.canvas.width - newWidth) / 2; // Используем центрирование
+        this.dy = (this.canvas.height - newHeight) / 2; // Используем центрирование
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.startImage, this.dx, this.dy, newWidth, newHeight);
-    }
+      }
     },
     resizeImage() {
     const newWidth = this.$refs.scaleModal.outputW;

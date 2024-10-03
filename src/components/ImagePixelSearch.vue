@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="canvas-container">
     <canvas ref="canvas" @click="getPixelColor" @mousemove="getPixelColor"></canvas>
     <div v-if="pixelInfo" class="padding">
@@ -7,7 +7,7 @@
       <p>Размер изображения: ширина: {{ imageWidth }}px, высота: {{ imageHeight }}px</p>
     </div>
   </div>
-</template>
+</template> -->
 
 <script>
 export default {

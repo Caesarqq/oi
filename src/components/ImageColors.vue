@@ -69,7 +69,7 @@
         <div>{{ color2.hex }}</div>
         <div>Координаты: x: {{ color2.x }}, y: {{ color2.y }}</div>
       </div>
-      <div class="{ insufficient: contrastRatio < 4.5 }">
+      <div :class="{ insufficient: contrastRatio < 4.5 }">
         <div>Контрастное соотношение: {{ contrastRatio.toFixed(2) }}:1</div>
         <div v-if="contrastRatio < 4.5">Контраст недостаточный</div>
       </div>
@@ -90,7 +90,12 @@ export default {
       color1: this.createEmptyColor(),
       color2: this.createEmptyColor(),
       contrastRatio: 1,
-      colorMenu: false
+      colorMenu: false,
+      isDragging: false,
+      startX: 0,
+      startY: 0,
+      offsetX: 0,
+      offsetY: 0
     };
   },
   methods: {
@@ -109,12 +114,69 @@ export default {
       if (tool === 'pipette') {
         this.$emit('pipette-active', true);
         this.openMenu();
-        this.pixelSearchRef.addEventListener('click', this.updateColor); // Добавить обработчик кликов только при выборе пипетки
+        this.pixelSearchRef.addEventListener('click', this.updateColor);
       } else {
         this.$emit('pipette-active', false);
         this.closeMenu();
-        this.pixelSearchRef.removeEventListener('click', this.updateColor); // Удалить обработчик при смене инструмента
+        this.pixelSearchRef.removeEventListener('click', this.updateColor);
       }
+
+      if (tool === 'hand') {
+        this.enableHandTool();
+      } else {
+        this.disableHandTool();
+      }
+    },
+    enableHandTool() {
+      window.addEventListener('mousedown', this.startDrag);
+      window.addEventListener('mousemove', this.onDrag);
+      window.addEventListener('mouseup', this.endDrag);
+      window.addEventListener('keydown', this.onKeyDown);
+    },
+    disableHandTool() {
+      window.removeEventListener('mousedown', this.startDrag);
+      window.removeEventListener('mousemove', this.onDrag);
+      window.removeEventListener('mouseup', this.endDrag);
+      window.removeEventListener('keydown', this.onKeyDown);
+    },
+    startDrag(event) {
+      if (this.currentTool !== 'hand') return;
+      this.isDragging = true;
+      this.startX = event.clientX - this.offsetX;
+      this.startY = event.clientY - this.offsetY;
+    },
+    onDrag(event) {
+      if (!this.isDragging || this.currentTool !== 'hand') return;
+      this.offsetX = event.clientX - this.startX;
+      this.offsetY = event.clientY - this.startY;
+      this.updateCanvasPosition();
+    },
+    endDrag() {
+      if (this.currentTool !== 'hand') return;
+      this.isDragging = false;
+    },
+    onKeyDown(event) {
+      if (this.currentTool !== 'hand') return;
+      const step = 10;
+      switch (event.key) {
+        case 'ArrowUp':
+          this.offsetY -= step;
+          break;
+        case 'ArrowDown':
+          this.offsetY += step;
+          break;
+        case 'ArrowLeft':
+          this.offsetX -= step;
+          break;
+        case 'ArrowRight':
+          this.offsetX += step;
+          break;
+      }
+      this.updateCanvasPosition();
+    },
+    updateCanvasPosition() {
+      const canvas = this.pixelSearchRef;
+      canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
     },
     openMenu() {
       this.colorMenu = true;
@@ -182,6 +244,8 @@ export default {
     if (this.pixelSearchRef) {
       this.pixelSearchRef.removeEventListener('click', this.updateColor);
     }
+    window.removeEventListener('click', this.updateColor);
+    this.disableHandTool();
   }
 };
 </script>

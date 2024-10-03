@@ -1,141 +1,135 @@
 <template>
 <div class="modal">
-<div class="modal__container header">
-<p class="header__text">Фильтрация изображения</p>
-<button class="header__button" @click="$emit('close')">X</button>
-</div>
-<div class="modal__line">
-<div class="modal__element matrix">
-    <div class="matrix__line">
-    <input class="matrix__input" type="number" v-model="matrix[0][0]" />
-    <input class="matrix__input" type="number" v-model="matrix[0][1]" />
-    <input class="matrix__input" type="number" v-model="matrix[0][2]" />
+    <div class="modal__container header">
+    <p class="header__text">Фильтрация изображения</p>
+    <button class="header__button" @click="$emit('close')">X</button>
     </div>
-    <div class="matrix__line">
-    <input class="matrix__input" type="number" v-model="matrix[1][0]" />
-    <input class="matrix__input" type="number" v-model="matrix[1][1]" />
-    <input class="matrix__input" type="number" v-model="matrix[1][2]" />
+    <div class="modal__line">
+    <div class="modal__element matrix">
+        <div class="matrix__line">
+        <input class="matrix__input" type="number" v-model="matrix[0][0]" />
+        <input class="matrix__input" type="number" v-model="matrix[0][1]" />
+        <input class="matrix__input" type="number" v-model="matrix[0][2]" />
+        </div>
+        <div class="matrix__line">
+        <input class="matrix__input" type="number" v-model="matrix[1][0]" />
+        <input class="matrix__input" type="number" v-model="matrix[1][1]" />
+        <input class="matrix__input" type="number" v-model="matrix[1][2]" />
+        </div>
+        <div class="matrix__line">
+        <input class="matrix__input" type="number" v-model="matrix[2][0]" />
+        <input class="matrix__input" type="number" v-model="matrix[2][1]" />
+        <input class="matrix__input" type="number" v-model="matrix[2][2]" />
+        </div>
     </div>
-    <div class="matrix__line">
-    <input class="matrix__input" type="number" v-model="matrix[2][0]" />
-    <input class="matrix__input" type="number" v-model="matrix[2][1]" />
-    <input class="matrix__input" type="number" v-model="matrix[2][2]" />
+    <div class="modal__element type">
+        <label class="modal__label">
+        <input type="radio" value="same" v-model="selectedFilter" />
+        Тождественное
+        </label>
+        <label class="modal__label">
+        <input type="radio" value="sharp" v-model="selectedFilter" />
+        Резкость
+        </label>
+        <label class="modal__label">
+        <input type="radio" value="gaus" v-model="selectedFilter" />
+        Гаусс
+        </label>
+        <label class="modal__label">
+        <input type="radio" value="rect" v-model="selectedFilter" />
+        Прямоугольное
+        </label>
+        <label class="modal__label">
+        <input type="radio" value="sobel" v-model="selectedFilter" />
+        Собель
+        </label>
     </div>
-</div>
-<div class="modal__element type">
-    <label class="modal__label">
-    <input type="radio" value="same" v-model="selectedFilter" />
-    Тождественное
+    </div>
+    <div class="modal__line">
+    <label>
+        <input type="checkbox" v-model="preview" @change="applyPreview" />
+        Предпросмотр
     </label>
-    <label class="modal__label">
-    <input type="radio" value="sharp" v-model="selectedFilter" />
-    Резкость
-    </label>
-    <label class="modal__label">
-    <input type="radio" value="gaus" v-model="selectedFilter" />
-    Гаусс
-    </label>
-    <label class="modal__label">
-    <input type="radio" value="rect" v-model="selectedFilter" />
-    Прямоугольное
-    </label>
-    <label class="modal__label">
-    <input type="radio" value="sobel" v-model="selectedFilter" />
-    Собель
-    </label>
-</div>
-</div>
-<div class="modal__line">
-<label>
-    <input type="checkbox" v-model="preview" @change="applyPreview" />
-    Предпросмотр
-</label>
-</div>
-<div class="modal__line">
-<div class="modal__element">
-    <button class="modal__button" @click="applyFilter">Применить</button>
-</div>
-<div class="modal__element">
-    <button class="modal__button" @click="resetFilter">Сбросить</button>
-</div>
-</div>
+    </div>
+    <div class="modal__line">
+    <div class="modal__element">
+        <button class="modal__button" @click="applyFilter">Применить</button>
+    </div>
+    <div class="modal__element">
+        <button class="modal__button" @click="resetFilter">Сбросить</button>
+    </div>
+    </div>
 </div>
 </template>
 
 <script>
 export default {
-name: "FilteringModal",
-props: {
-dx: Number,
-dy: Number,
-nowW: Number,
-nowH: Number,
-ctxRef: CanvasRenderingContext2D,
-startImage: Object,
-},
-data() {
-return {
-preview: false,
-selectedFilter: "same",
-matrix: [
-    [0, 0, 0],
-    [0, 1, 0],
-    [0, 0, 0]
-],
-sobelX: [
-    [-1, 0, 1],
-    [-2, 0, 2],
-    [-1, 0, 1]
-],
-sobelY: [
-    [-1, -2, -1],
-    [0, 0, 0],
-    [1, 2, 1]
-]
-};
-},
-watch: {
-selectedFilter(value) {
-switch (value) {
-    case 'same':
-    this.matrix = [
+  name: "FilteringModal",
+  props: {
+    dx: Number,
+    dy: Number,
+    nowW: Number,
+    nowH: Number,
+    ctxRef: CanvasRenderingContext2D,
+    startImage: Object,
+  },
+  data() {
+    return {
+      preview: false,
+      selectedFilter: "same",
+      matrix: [
         [0, 0, 0],
         [0, 1, 0],
-        [0, 0, 0]
-    ];
-    break;
-    case 'sharp':
-    this.matrix = [
-        [-1, -1, -1],
-        [-1, 9, -1],
-        [-1, -1, -1]
-    ];
-    break;
-    case 'gaus':
-    this.matrix = [
-        [1, 2, 1],
-        [2, 4, 2],
-        [1, 2, 1]
-    ];
-    break;
-    case 'rect':
-    this.matrix = [
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1]
-    ];
-    break;
-    case 'sobel':
-    this.matrix = [
-        [1, 0, -1],
-        [2, 0, -2],
-        [1, 0, -1]
-    ];
-    break;
-}
-if (this.preview) {
-    this.applyFilter();
-}
+        [0, 0, 0],
+      ],
+      localCtx: null,
+    };
+  },
+  mounted() {
+    this.localCtx = this.ctxRef;
+  },
+  watch: {
+    selectedFilter(value) {
+      switch (value) {
+        case "same":
+          this.matrix = [
+            [0, 0, 0],
+            [0, 1, 0],
+            [0, 0, 0],
+          ];
+          break;
+        case "sharp":
+          this.matrix = [
+            [-1, -1, -1],
+            [-1, 9, -1],
+            [-1, -1, -1],
+          ];
+          break;
+        case "gaus":
+          this.matrix = [
+            [1, 2, 1],
+            [2, 4, 2],
+            [1, 2, 1],
+          ];
+          break;
+        case "rect":
+          this.matrix = [
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1],
+          ];
+          break;
+        case "sobel":
+          this.matrix = [
+            [1, 0, -1],
+            [2, 0, -2],
+            [1, 0, -1],
+          ];
+          break;
+      }
+      if (this.preview) {
+        this.applyFilter();
+      }
 }
 },
 methods: {
@@ -194,100 +188,88 @@ if (this.preview) {
 }
 },
 resetFilter() {
-this.selectedFilter = "same";
-if (this.preview) {
-    this.ctxRef.drawImage(
-    this.startImage,
-    this.dx,
-    this.dy,
-    this.nowW,
-    this.nowH
-    );
-}
-},
-applyPreview() {
-if (this.preview) {
-    this.applyFilter();
-} else {
-    this.ctxRef.drawImage(
-    this.startImage,
-    this.dx,
-    this.dy,
-    this.nowW,
-    this.nowH
-    );
-}
-},
-applyFilter() {
-if (!this.preview && this.selectedFilter !== "sobel") {
-    this.ctxRef.drawImage(
-    this.startImage,
-    this.dx,
-    this.dy,
-    this.nowW,
-    this.nowH
-    );
-}
+      this.selectedFilter = "same";
+      if (this.preview) {
+        this.localCtx.drawImage(
+          this.startImage,
+          this.dx,
+          this.dy,
+          this.nowW,
+          this.nowH
+        );
+      }
+    },
+    applyPreview() {
+      if (this.preview) {
+        this.applyFilter();
+      } else {
+        this.localCtx.drawImage(
+          this.startImage,
+          this.dx,
+          this.dy,
+          this.nowW,
+          this.nowH
+        );
+      }
+    },
+    applyFilter() {
+  if (
+    JSON.stringify(this.matrix) === JSON.stringify([
+      [1, 1, 1],
+      [0, 0, 0],
+      [-1, -1, -1],
+    ]) ||
+    JSON.stringify(this.matrix) === JSON.stringify([
+      [1, 0, -1],
+      [1, 0, -1],
+      [1, 0, -1],
+    ]) ||
+    JSON.stringify(this.matrix) === JSON.stringify([
+      [1, 1, 1],
+      [-1, -1, -1],
+      [-1, -1, -1],
+    ])
+  ) {
 
-const imageData = this.ctxRef.getImageData(
-    this.dx,
-    this.dy,
-    this.nowW,
-    this.nowH
-);
-const newData = new Uint8ClampedArray(imageData.data.length);
+    this.localCtx.fillStyle = "black";
+    this.localCtx.fillRect(this.dx, this.dy, this.nowW, this.nowH);
+    return;
+  }
+  const imageData = this.ctxRef.getImageData(this.dx, this.dy, this.nowW, this.nowH);
+  const newData = new Uint8ClampedArray(imageData.data.length);
 
-const paddedData = this.padImageData(
-    imageData.data,
-    imageData.width,
-    imageData.height
-);
+  console.log("Initial Image Data:", imageData.data.slice(0, 20)); 
 
-if (this.selectedFilter === "sobel") {
-    const gradientX = this.applyKernel(
-    paddedData,
-    imageData.width,
-    imageData.height,
-    this.sobelX
-    );
-    const gradientY = this.applyKernel(
-    paddedData,
-    imageData.width,
-    imageData.height,
-    this.sobelY
-    );
-    for (let i = 0; i < newData.length; i += 4) {
-    const magnitude = Math.sqrt(
-        gradientX[i] ** 2 + gradientY[i] ** 2
-    );
-    newData[i] = magnitude;
-    newData[i + 1] = magnitude;
-    newData[i + 2] = magnitude;
-    newData[i + 3] = 255;
-    }
-} else {
-    for (let y = 0; y < imageData.height; y++) {
+  const paddedData = this.padImageData(imageData.data, imageData.width, imageData.height);
+
+  for (let y = 0; y < imageData.height; y++) {
     for (let x = 0; x < imageData.width; x++) {
-        for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < 4; c++) { 
         const outputIndex = (y * imageData.width + x) * 4 + c;
         let sum = 0;
         let kernelSum = 0;
+
         for (let ky = 0; ky < 3; ky++) {
-            for (let kx = 0; kx < 3; kx++) {
-            const inputIndex =
-                ((y + ky) * (imageData.width + 2) + (x + kx)) * 4 + c;
+          for (let kx = 0; kx < 3; kx++) {
+            const inputIndex = ((y + ky) * (imageData.width + 2) + (x + kx)) * 4 + c;
             sum += paddedData[inputIndex] * this.matrix[ky][kx];
             kernelSum += this.matrix[ky][kx];
-            }
+          }
         }
-        newData[outputIndex] = sum / kernelSum;
-        }
+        if (kernelSum === 0) kernelSum = 1;
+        newData[outputIndex] = Math.min(Math.max(sum / kernelSum, 0), 255);
+      }
     }
-    }
-}
+  }
 
-imageData.data.set(newData);
-this.ctxRef.putImageData(imageData, this.dx, this.dy);
+  for (let i = 3; i < newData.length; i += 4) {
+    newData[i] = 255; 
+  }
+
+  console.log("Filtered Image Data:", newData.slice(0, 20)); 
+
+  imageData.data.set(newData);
+  this.ctxRef.putImageData(imageData, this.dx, this.dy);
 },
 applyKernel(paddedData, width, height, kernel) {
 const result = new Uint8ClampedArray(paddedData.length);

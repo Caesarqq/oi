@@ -111,8 +111,8 @@ data() {
     startX: null,
     startY: null,
     state: '',
-    dx: 0, // Начальная координата X
-    dy: 0, // Начальная координата Y
+    dx: 0,
+    dy: 0, 
     resl: null,
     isShift: false
     };
@@ -200,7 +200,6 @@ methods: {
         this.height = this.startImage.height;
         this.width = this.startImage.width;
 
-        // Рассчитываем масштаб и начальные координаты
         const scale = Math.min(this.canvas.width / this.width, this.canvas.height / this.height);
         const newWidth = this.width * scale;
         const newHeight = this.height * scale;
@@ -208,8 +207,8 @@ methods: {
         this.nowW = newWidth;
         this.nowH = newHeight;
 
-        this.dx = (this.canvas.width - newWidth) / 2; // Используем центрирование
-        this.dy = (this.canvas.height - newHeight) / 2; // Используем центрирование
+        this.dx = (this.canvas.width - newWidth) / 2; 
+        this.dy = (this.canvas.height - newHeight) / 2; 
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.startImage, this.dx, this.dy, newWidth, newHeight);

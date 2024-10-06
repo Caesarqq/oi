@@ -63,11 +63,17 @@
         <div class="color-box" :style="{ backgroundColor: color1.hex }"></div>
         <div>{{ color1.hex }}</div>
         <div>Координаты: x: {{ color1.x }}, y: {{ color1.y }}</div>
+        <div>RGB: {{ color1.rgb }}</div>
+        <div>XYZ: {{ color1.xyz }}</div>
+        <div>Lab: {{ color1.lab }}</div>
       </div>
       <div class="color-info">
         <div class="color-box" :style="{ backgroundColor: color2.hex }"></div>
         <div>{{ color2.hex }}</div>
         <div>Координаты: x: {{ color2.x }}, y: {{ color2.y }}</div>
+        <div>RGB: {{ color2.rgb }}</div>
+        <div>XYZ: {{ color2.xyz }}</div>
+        <div>Lab: {{ color2.lab }}</div>
       </div>
       <div :class="{ insufficient: contrastRatio < 4.5 }">
         <div>Контрастное соотношение: {{ contrastRatio.toFixed(2) }}:1</div>
@@ -76,6 +82,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import colorConvert from 'color-convert';

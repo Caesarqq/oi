@@ -141,8 +141,16 @@ export default {
       this.showCurveCorrection = !this.showCurveCorrection;
       if (this.showCurveCorrection) {
         this.calculateHistograms();
-        this.renderHistogram();
+        this.$nextTick(() => {
+          this.renderHistogram(true);
+        });
       }
+    },
+    applyCurves() {
+      this.correctImage(); // Применяем коррекцию изображения
+      this.preview = false; // Отключаем режим предпросмотра, так как изменения применены
+      this.calculateHistograms(); // Пересчитываем гистограммы после изменения
+      this.renderHistogram(true); // Перерисовываем график
     },
     closeResultDialog() {
       this.showResultDialog = false;
@@ -175,7 +183,9 @@ export default {
       const max = Math.max(...histogram);
       return histogram.map(value => (value / max) * 255);
     },
-    renderHistogram() {
+    renderHistogram(forceRender = false) {
+      if (this.chart && !forceRender) return;
+
       const ctx = this.$refs.chart.getContext('2d');
       if (this.chart) {
         this.chart.destroy();
@@ -249,25 +259,25 @@ export default {
         this.point2.x = this.point1.x + 1;
       }
       this.updateCurve();
-      this.applyPreview(); // Ensure histogram updates immediately
+      this.applyPreview(); 
     },
     changeY1() {
       if (this.point1.y < 1) this.point1.y = 1;
       if (this.point1.y > 255) this.point1.y = 255;
       this.updateCurve();
-      this.applyPreview(); // Ensure histogram updates immediately
+      this.applyPreview(); 
     },
     changeX2() {
       if (this.point2.x <= this.point1.x) this.point2.x = this.point1.x + 1;
       if (this.point2.x > 255) this.point2.x = 255;
       this.updateCurve();
-      this.applyPreview(); // Ensure histogram updates immediately
+      this.applyPreview();
     },
     changeY2() {
       if (this.point2.y < 1) this.point2.y = 1;
       if (this.point2.y > 255) this.point2.y = 255;
       this.updateCurve();
-      this.applyPreview(); // Ensure histogram updates immediately
+      this.applyPreview(); 
     },
     applyPreview() {
       if (this.preview) {
@@ -316,7 +326,7 @@ export default {
       this.point1 = { x: 0, y: 0 };
       this.point2 = { x: 255, y: 255 };
       this.updateCurve();
-      this.applyPreview(); // Ensure histogram updates immediately
+      this.applyPreview();
     },
     restoreOriginalImage() {
       const canvas = document.createElement('canvas');

@@ -13,77 +13,42 @@
       </template>
       <span>Перемещение изображения</span>
     </v-tooltip>
-
-    <v-tooltip bottom>
-      <template v-slot:activator="{ on, attrs }">
+    <div class="pipette-panel" :class="{ collapsed: !isPanelOpen }">
+      <v-btn icon @click="togglePanel" class="toggle-btn">
+        <v-icon>{{ isPanelOpen ? 'mdi-chevron-right' : 'mdi-chevron-left' }}</v-icon>
+      </v-btn>
+      <div v-show="isPanelOpen" class="panel-content">
         <v-btn
-          v-bind="attrs"
-          v-on="on"
-          :color="currentTool === 'pipette' ? 'red' : 'blue'"
+          :color="currentTool === 'pipette' ? 'blue' : 'red'"
           @click="selectTool('pipette')"
+          class="pipette-btn"
         >
           Пипетка
         </v-btn>
-      </template>
-      <span>Выбор цвета</span>
-    </v-tooltip>
-
-    <v-menu
-      v-if="currentTool === 'pipette'"
-      v-model="colorMenu"
-      top
-      :close-on-content-click="false"
-      persistent
-      activator="parent"
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn v-bind="attrs" v-on="on" icon @click.stop="toggleMenu">
-          <v-icon>mdi-palette</v-icon>
-        </v-btn>
-      </template>
-      <v-card>
-        <v-card-title>Выбранные цвета</v-card-title>
-        <v-card-text>
-          <div class="color-info">
-            <div class="color-box" :style="{ backgroundColor: color1.hex }" @click.stop></div>
-            <div>{{ color1.hex }}</div>
-            <div>Координаты: x: {{ color1.x }}, y: {{ color1.y }}</div>
-          </div>
-          <div class="color-info">
-            <div class="color-box" :style="{ backgroundColor: color2.hex }" @click.stop></div>
-            <div>{{ color2.hex }}</div>
-            <div>Координаты: x: {{ color2.x }}, y: {{ color2.y }}</div>
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-menu>
-
-    <div v-if="currentTool === 'pipette'">
-      <div class="color-info">
-        <div class="color-box" :style="{ backgroundColor: color1.hex }"></div>
-        <div>{{ color1.hex }}</div>
-        <div>Координаты: x: {{ color1.x }}, y: {{ color1.y }}</div>
-        <div>RGB: {{ color1.rgb }}</div>
-        <div>XYZ: {{ color1.xyz }}</div>
-        <div>Lab: {{ color1.lab }}</div>
-      </div>
-      <div class="color-info">
-        <div class="color-box" :style="{ backgroundColor: color2.hex }"></div>
-        <div>{{ color2.hex }}</div>
-        <div>Координаты: x: {{ color2.x }}, y: {{ color2.y }}</div>
-        <div>RGB: {{ color2.rgb }}</div>
-        <div>XYZ: {{ color2.xyz }}</div>
-        <div>Lab: {{ color2.lab }}</div>
-      </div>
-      <div :class="{ insufficient: contrastRatio < 4.5 }">
-        <div>Контрастное соотношение: {{ contrastRatio.toFixed(2) }}:1</div>
-        <div v-if="contrastRatio < 4.5">Контраст недостаточный</div>
+        <div class="color-info">
+          <div class="color-box" :style="{ backgroundColor: color1.hex }"></div>
+          <div>Цвет: {{ color1.hex }}</div>
+          <div>Координаты: x: {{ color1.x }}, y: {{ color1.y }}</div>
+          <div>RGB: {{ color1.rgb }}</div>
+          <div>XYZ: {{ color1.xyz }}</div>
+          <div>Lab: {{ color1.lab }}</div>
+        </div>
+        <div class="color-info">
+          <div class="color-box" :style="{ backgroundColor: color2.hex }"></div>
+          <div>Цвет: {{ color2.hex }}</div>
+          <div>Координаты: x: {{ color2.x }}, y: {{ color2.y }}</div>
+          <div>RGB: {{ color2.rgb }}</div>
+          <div>XYZ: {{ color2.xyz }}</div>
+          <div>Lab: {{ color2.lab }}</div>
+        </div>
+        <div :class="{ insufficient: contrastRatio < 4.5 }">
+          <div>Контрастное соотношение: {{ contrastRatio.toFixed(2) }}:1</div>
+          <div v-if="contrastRatio < 4.5">Контраст недостаточный</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
-
-
 <script>
 import colorConvert from 'color-convert';
 
@@ -97,12 +62,7 @@ export default {
       color1: this.createEmptyColor(),
       color2: this.createEmptyColor(),
       contrastRatio: 1,
-      colorMenu: false,
-      isDragging: false,
-      startX: 0,
-      startY: 0,
-      offsetX: 0,
-      offsetY: 0
+      isPanelOpen: true,
     };
   },
   methods: {
@@ -120,90 +80,21 @@ export default {
       this.currentTool = tool;
       if (tool === 'pipette') {
         this.$emit('pipette-active', true);
-        this.openMenu();
         this.pixelSearchRef.addEventListener('click', this.updateColor);
       } else {
         this.$emit('pipette-active', false);
-        this.closeMenu();
         this.pixelSearchRef.removeEventListener('click', this.updateColor);
       }
-
-      if (tool === 'hand') {
-        this.enableHandTool();
-      } else {
-        this.disableHandTool();
-      }
     },
-    enableHandTool() {
-      window.addEventListener('mousedown', this.startDrag);
-      window.addEventListener('mousemove', this.onDrag);
-      window.addEventListener('mouseup', this.endDrag);
-      window.addEventListener('keydown', this.onKeyDown);
-    },
-    disableHandTool() {
-      window.removeEventListener('mousedown', this.startDrag);
-      window.removeEventListener('mousemove', this.onDrag);
-      window.removeEventListener('mouseup', this.endDrag);
-      window.removeEventListener('keydown', this.onKeyDown);
-    },
-    startDrag(event) {
-      if (this.currentTool !== 'hand') return;
-      this.isDragging = true;
-      this.startX = event.clientX - this.offsetX;
-      this.startY = event.clientY - this.offsetY;
-    },
-    onDrag(event) {
-      if (!this.isDragging || this.currentTool !== 'hand') return;
-      this.offsetX = event.clientX - this.startX;
-      this.offsetY = event.clientY - this.startY;
-      this.updateCanvasPosition();
-    },
-    endDrag() {
-      if (this.currentTool !== 'hand') return;
-      this.isDragging = false;
-    },
-    onKeyDown(event) {
-      if (this.currentTool !== 'hand') return;
-      const step = 10;
-      switch (event.key) {
-        case 'ArrowUp':
-          this.offsetY -= step;
-          break;
-        case 'ArrowDown':
-          this.offsetY += step;
-          break;
-        case 'ArrowLeft':
-          this.offsetX -= step;
-          break;
-        case 'ArrowRight':
-          this.offsetX += step;
-          break;
-      }
-      this.updateCanvasPosition();
-    },
-    updateCanvasPosition() {
-      const canvas = this.pixelSearchRef;
-      canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
-    },
-    openMenu() {
-      this.colorMenu = true;
-    },
-    closeMenu() {
-      this.colorMenu = false;
-    },
-    toggleMenu() {
-      this.colorMenu = !this.colorMenu;
+    togglePanel() {
+      this.isPanelOpen = !this.isPanelOpen;
     },
     updateColor(event) {
       if (this.currentTool !== 'pipette') return;
 
       const rect = this.pixelSearchRef.getBoundingClientRect();
-      const x = Math.floor(
-        (event.clientX - rect.left) * (this.pixelSearchRef.width / rect.width)
-      );
-      const y = Math.floor(
-        (event.clientY - rect.top) * (this.pixelSearchRef.height / rect.height)
-      );
+      const x = Math.floor((event.clientX - rect.left) * (this.pixelSearchRef.width / rect.width));
+      const y = Math.floor((event.clientY - rect.top) * (this.pixelSearchRef.height / rect.height));
 
       const ctx = this.pixelSearchRef.getContext('2d');
       const imageData = ctx.getImageData(x, y, 1, 1);
@@ -215,12 +106,12 @@ export default {
       const lab = colorConvert.rgb.lab(colorData[0], colorData[1], colorData[2]);
 
       const color = {
-        hex: hex,
-        rgb: rgb,
+        hex,
+        rgb,
         xyz: `XYZ(${xyz[0].toFixed(2)}, ${xyz[1].toFixed(2)}, ${xyz[2].toFixed(2)})`,
         lab: `Lab(${lab[0].toFixed(2)}, ${lab[1].toFixed(2)}, ${lab[2].toFixed(2)})`,
-        x: x,
-        y: y
+        x,
+        y
       };
 
       if (event.altKey || event.ctrlKey || event.shiftKey) {
@@ -245,33 +136,60 @@ export default {
     }
   },
   mounted() {
-    // Удаляем глобальный обработчик, добавляем только на канвас
-  },
-  beforeDestroy() {
-    if (this.pixelSearchRef) {
-      this.pixelSearchRef.removeEventListener('click', this.updateColor);
-    }
-    window.removeEventListener('click', this.updateColor);
-    this.disableHandTool();
+    this.selectTool('pipette');
   }
 };
 </script>
-
 <style>
+.pipette-panel {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  width: 250px;
+  height: 100%;
+  background-color: #f9f9f9;
+  border-left: 1px solid #ddd;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease;
+}
+
+.pipette-panel.collapsed {
+  width: 40px;
+}
+
+.panel-content {
+  padding: 15px;
+}
+
+.toggle-btn {
+  position: absolute;
+  left: -25px;
+  top: 10px;
+  background-color: #ddd;
+  border-radius: 50%;
+}
+
 .color-info {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  flex-direction: column;
+  margin-bottom: 15px;
 }
 
 .color-box {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 10px;
   border: 1px solid #000;
 }
 
 .insufficient {
   color: red;
+}
+
+.pipette-btn {
+  width: 100%;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 </style>

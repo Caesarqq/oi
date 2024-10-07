@@ -251,13 +251,12 @@ methods: {
     this.updateImage();
     },
     saveImage() {
-    const link = document.createElement('a');
-    link.href = this.canvas.toDataURL('image/png');
-    link.download = 'filtered_image.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    }
+  const canvas = this.$refs.pixelSearch;
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'scaled_image.png';
+  link.click();
+}
 }
 };
 </script>

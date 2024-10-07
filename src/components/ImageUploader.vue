@@ -1,7 +1,9 @@
 <template>
   <div class="canvasmain">
-    <div class="canvas-container">
-      <canvas ref="pixelSearch" @mousemove="getPixelInfo"></canvas>
+    <div class="canvas-wrapper">
+      <div class="canvas-container">
+        <canvas ref="pixelSearch" @mousemove="getPixelInfo"></canvas>
+      </div>
     </div>
     <image-settings
       ref="imageSettings"
@@ -40,6 +42,7 @@
       :nowH="imageHeight"
       :startImage="image"
     ></image-filters>
+    <v-btn class="save-button" @click="saveImage" color="blue">Сохранить</v-btn>
   </div>
 </template>
 
@@ -75,8 +78,8 @@ export default {
         y: 0,
         color: { r: 0, g: 0, b: 0 }
       },
-      dx: 0,  
-      dy: 0   
+      dx: 0,
+      dy: 0
     };
   },
   methods: {
@@ -120,14 +123,11 @@ export default {
 
       const canvas = this.$refs.pixelSearch;
       const ctx = canvas.getContext('2d');
-      const canvasWidth = canvas.parentElement.clientWidth;
-      const canvasHeight = canvas.parentElement.clientHeight;
+      const canvasWidth = this.imageWidth;
+      const canvasHeight = this.imageHeight;
 
-      const scaledWidth = this.imageWidth;
-      const scaledHeight = this.imageHeight;
-
-      this.dx = (canvasWidth - scaledWidth) / 2;
-      this.dy = (canvasHeight - scaledHeight) / 2;
+      this.dx = 0;
+      this.dy = 0;
 
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
@@ -135,9 +135,9 @@ export default {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (this.interpolation === 'nearest') {
-        this.drawNearestNeighbor(ctx, this.image, scaledWidth, scaledHeight);
+        this.drawNearestNeighbor(ctx, this.image, canvasWidth, canvasHeight);
       } else if (this.interpolation === 'none') {
-        ctx.drawImage(this.image, this.dx, this.dy, scaledWidth, scaledHeight);
+        ctx.drawImage(this.image, this.dx, this.dy, canvasWidth, canvasHeight);
       }
     },
     drawNearestNeighbor(ctx, img, width, height) {
@@ -163,11 +163,7 @@ export default {
         }
       }
 
-      ctx.putImageData(
-        scaledImgData,
-        (ctx.canvas.width - width) / 2,
-        (ctx.canvas.height - height) / 2
-      );
+      ctx.putImageData(scaledImgData, this.dx, this.dy);
     },
     getPixelInfo(event) {
       if (!this.image) return;
@@ -198,31 +194,44 @@ export default {
       this.interpolation = method;
       this.drawImageToCanvas();
     },
-    updateImage(imageDataUrl) {
-      const img = new Image();
-      img.onload = () => {
-        this.image = img;
-        this.drawImageToCanvas();
-      };
-      img.src = imageDataUrl;
+    saveImage() {
+      if (!this.image) return;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = this.imageWidth;
+      canvas.height = this.imageHeight;
+
+      ctx.drawImage(this.image, 0, 0, canvas.width, canvas.height);
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'resized_image.png';
+      link.click();
     }
-  },
-  mounted() {
-    this.$refs.imageSettings.setCanvasRef(this.$refs.pixelSearch);
   }
 };
 </script>
 
 <style>
-canvas {
-  width: 1500px;
-  height: auto;
-  padding: 50px;
+.canvas-wrapper {
+  display: flex;
+  justify-content: center;
 }
+
+canvas {
+  width: auto;
+  height: auto;
+}
+
 .row {
   margin: 0px;
 }
 .padding {
-  padding-left: 50px;
+  padding: 0;
+}
+.save-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
 }
 </style>

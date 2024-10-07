@@ -95,7 +95,7 @@
           <v-spacer></v-spacer>
           <v-btn color="primary" @click="applyResizeSettings">Применить</v-btn>
           <v-btn color="primary" @click="closeResizeDialog">Отменить</v-btn>
-          <v-btn color="primary" @click="saveImage">Сохранить</v-btn>
+          <!-- <v-btn color="primary" @click="saveImage">Сохранить</v-btn> -->
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -144,25 +144,39 @@
     },
     methods: {
       onWidthChange(mode) {
-        if (this.maintainAspectRatio) {
-          if (mode === 'percent') {
-            this.percentHeight = (this.percentWidth / this.aspectRatio).toFixed(2);
-          } else {
-            this.scaledHeight = Math.round(this.scaledWidth / this.aspectRatio);
-          }
-        }
-        this.emitResizeEvent();
-      },
-      onHeightChange(mode) {
-        if (this.maintainAspectRatio) {
-          if (mode === 'percent') {
-            this.percentWidth = (this.percentHeight * this.aspectRatio).toFixed(2);
-          } else {
-            this.scaledWidth = Math.round(this.scaledHeight * this.aspectRatio);
-          }
-        }
-        this.emitResizeEvent();
-      },
+    if (this.maintainAspectRatio) {
+      if (mode === 'percent') {
+        this.percentHeight = this.percentWidth; // Высота = ширина в процентах
+        this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
+      } else {
+        this.scaledHeight = Math.round(this.scaledWidth / this.aspectRatio); // Синхронизация высоты по пикселям
+        this.percentHeight = ((this.scaledHeight / this.image.height) * 100).toFixed(2);
+      }
+    } else {
+      if (mode === 'percent') {
+        this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
+      }
+    }
+    this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
+    this.emitResizeEvent();
+  },
+  onHeightChange(mode) {
+    if (this.maintainAspectRatio) {
+      if (mode === 'percent') {
+        this.percentWidth = this.percentHeight; // Ширина = высота в процентах
+        this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
+      } else {
+        this.scaledWidth = Math.round(this.scaledHeight * this.aspectRatio); // Синхронизация ширины по пикселям
+        this.percentWidth = ((this.scaledWidth / this.image.width) * 100).toFixed(2);
+      }
+    } else {
+      if (mode === 'percent') {
+        this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
+      }
+    }
+    this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
+    this.emitResizeEvent();
+  },
       onSliderChange() {
         const scale = this.slider / 100;
         this.percentWidth = (scale * 100).toFixed(2);

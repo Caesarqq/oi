@@ -76,8 +76,7 @@
                   [0, 1, 0],
                   [0, 0, 0],
               ],
-              isProcessing: false, // Флаг, указывающий на обработку
-              // Значения фильтров по умолчанию
+              isProcessing: false, 
               sobelX: [
                   [1, 0, -1],
                   [2, 0, -2],
@@ -126,7 +125,7 @@
                       this.matrix = this.rect;
                       break;
                   case 'sobel':
-                      this.matrix = this.sobelX; // Используем фильтр Собель по X как значение по умолчанию
+                      this.matrix = this.sobelX; 
                       break;
               }
               if (this.preview) {
@@ -136,19 +135,17 @@
       },
       methods: {
           applyFilter() {
-              if (this.isProcessing) return; // Если идет обработка, не продолжаем
+              if (this.isProcessing) return; 
               this.isProcessing = true;
   
-              // Получаем данные изображения
               const imageData = this.ctxRef.getImageData(this.dx, this.dy, this.nowW, this.nowH);
               const newData = new Uint8ClampedArray(imageData.data.length);
               const paddedData = this.padImageData(imageData.data, imageData.width, imageData.height);
   
-              // Запускаем асинхронную обработку с использованием requestAnimationFrame
               this.processFilterAsync(imageData, newData, paddedData, () => {
                   imageData.data.set(newData);
                   this.ctxRef.putImageData(imageData, this.dx, this.dy);
-                  this.isProcessing = false; // Обработка завершена
+                  this.isProcessing = false; 
               });
           },
   
@@ -156,11 +153,11 @@
               let y = 0;
               const step = () => {
                   if (y >= imageData.height) {
-                      callback(); // Обработка завершена, вызываем callback
+                      callback(); 
                       return;
                   }
                   for (let x = 0; x < imageData.width; x++) {
-                      for (let c = 0; c < 3; c++) { // Только цветовые каналы
+                      for (let c = 0; c < 3; c++) { 
                           const outputIndex = (y * imageData.width + x) * 4 + c;
                           let sum = 0;
                           for (let ky = 0; ky < 3; ky++) {
@@ -174,7 +171,7 @@
                       newData[(y * imageData.width + x) * 4 + 3] = imageData.data[(y * imageData.width + x) * 4 + 3];
                   }
                   y++;
-                  requestAnimationFrame(step); // Продолжаем обработку на следующем кадре
+                  requestAnimationFrame(step); 
               };
               step();
           },

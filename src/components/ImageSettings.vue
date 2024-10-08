@@ -102,120 +102,130 @@
   </div>
 </template>
   
-  <script>
-  export default {
-    props: {
-      resizeDialog: Boolean,
-      image: Object,
-      imageWidth: Number,
-      imageHeight: Number
-    },
-    data() {
-      return {
-        min: 12,
-        max: 300,
-        slider: 100,
-        resizeMode: 'percent',
-        resizeModes: [
-          { text: 'Проценты', value: 'percent' },
-          { text: 'Пиксели', value: 'pixels' }
-        ],
-        scaledWidth: this.imageWidth,
-        scaledHeight: this.imageHeight,
-        percentWidth: 100,
-        percentHeight: 100,
-        maintainAspectRatio: true,
-        interpolation: 'nearest',
-        interpolationMethods: [
-          { text: 'Ближайший сосед', value: 'nearest' },
-          { text: 'Без интерполяции', value: 'none' }
-        ],
-        canvas: null,
-        showSlider: false
-      };
-    },
-    computed: {
-      sliderPercent() {
-        return `${this.slider}%`;
-      },
-      aspectRatio() {
-        return this.image ? this.image.width / this.image.height : 1;
-      }
-    },
-    methods: {
-      onWidthChange(mode) {
-    if (this.maintainAspectRatio) {
-      if (mode === 'percent') {
-        this.percentHeight = this.percentWidth; // Высота = ширина в процентах
-        this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
-      } else {
-        this.scaledHeight = Math.round(this.scaledWidth / this.aspectRatio); // Синхронизация высоты по пикселям
-        this.percentHeight = ((this.scaledHeight / this.image.height) * 100).toFixed(2);
-      }
-    } else {
-      if (mode === 'percent') {
-        this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
-      }
-    }
-    this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
-    this.emitResizeEvent();
+<script>
+export default {
+  props: {
+    resizeDialog: Boolean,
+    image: Object,
+    imageWidth: Number,
+    imageHeight: Number
   },
-  onHeightChange(mode) {
-    if (this.maintainAspectRatio) {
+  data() {
+    return {
+      min: 12,
+      max: 300,
+      slider: 100,
+      resizeMode: 'percent',
+      resizeModes: [
+        { text: 'Проценты', value: 'percent' },
+        { text: 'Пиксели', value: 'pixels' }
+      ],
+      scaledWidth: this.imageWidth,
+      scaledHeight: this.imageHeight,
+      percentWidth: 100,
+      percentHeight: 100,
+      maintainAspectRatio: true,
+      interpolation: 'nearest',
+      interpolationMethods: [
+        { text: 'Ближайший сосед', value: 'nearest' },
+        { text: 'Без интерполяции', value: 'none' }
+      ],
+      canvas: null,
+      showSlider: false
+    };
+  },
+  computed: {
+    sliderPercent() {
+      return `${this.slider}%`;
+    },
+    aspectRatio() {
+      return this.image ? this.image.width / this.image.height : 1;
+    }
+  },
+  methods: {
+    onWidthChange(mode) {
       if (mode === 'percent') {
-        this.percentWidth = this.percentHeight; // Ширина = высота в процентах
+        this.percentWidth = Math.round(this.percentWidth); 
+        if (this.maintainAspectRatio) {
+          this.percentHeight = this.percentWidth;
+          this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
+        }
         this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
       } else {
-        this.scaledWidth = Math.round(this.scaledHeight * this.aspectRatio); // Синхронизация ширины по пикселям
-        this.percentWidth = ((this.scaledWidth / this.image.width) * 100).toFixed(2);
+        this.scaledWidth = parseInt(this.scaledWidth, 10);
+        if (this.maintainAspectRatio) {
+          this.scaledHeight = Math.round(this.scaledWidth / this.aspectRatio);
+          this.percentHeight = Math.round((this.scaledHeight / this.image.height) * 100);
+        }
       }
-    } else {
-      if (mode === 'percent') {
-        this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
-      }
-    }
-    this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
-    this.emitResizeEvent();
-  },
-      onSliderChange() {
-        const scale = this.slider / 100;
-        this.percentWidth = (scale * 100).toFixed(2);
-        this.percentHeight = (scale * 100).toFixed(2);
-        this.scaledWidth = Math.round(this.image.width * scale);
-        this.scaledHeight = Math.round(this.image.height * scale);
-        this.emitResizeEvent();
-      },
-      emitResizeEvent() {
-        this.$emit('resize', {
-          width: this.resizeMode === 'percent' ? this.image.width * (this.percentWidth / 100) : this.scaledWidth,
-          height: this.resizeMode === 'percent' ? this.image.height * (this.percentHeight / 100) : this.scaledHeight
-        });
-      },
-      applyResizeSettings() {
-        this.emitResizeEvent();
-        this.closeResizeDialog();
-      },
-      closeResizeDialog() {
-        this.$emit('update:resizeDialog', false);
-      },
-      setCanvasRef(canvas) {
-        this.canvas = canvas;
-      },
-      saveImage() {
-        const canvas = this.canvas;
-        const link = document.createElement('a');
-        link.download = 'image.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }
+      this.emitResizeEvent();
     },
-    watch: {
-      interpolation(val) {
-        this.$emit('interpolationChange', val);
+    onHeightChange(mode) {
+      if (mode === 'percent') {
+        this.percentHeight = Math.round(this.percentHeight); 
+        if (this.maintainAspectRatio) {
+          this.percentWidth = this.percentHeight;
+          this.scaledWidth = Math.round(this.image.width * (this.percentWidth / 100));
+        }
+        this.scaledHeight = Math.round(this.image.height * (this.percentHeight / 100));
+      } else {
+        this.scaledHeight = parseInt(this.scaledHeight, 10);
+        if (this.maintainAspectRatio) {
+          this.scaledWidth = Math.round(this.scaledHeight * this.aspectRatio);
+          this.percentWidth = Math.round((this.scaledWidth / this.image.width) * 100);
+        }
       }
+      this.emitResizeEvent();
+    },
+    onSliderChange() {
+      const scale = Math.round(this.slider); 
+      this.percentWidth = scale;
+      this.percentHeight = scale;
+      this.scaledWidth = Math.round(this.image.width * (scale / 100));
+      this.scaledHeight = Math.round(this.image.height * (scale / 100));
+      this.emitResizeEvent();
+    },
+    emitResizeEvent() {
+      this.$emit('resize', {
+        width: this.resizeMode === 'percent' ? this.image.width * (this.percentWidth / 100) : this.scaledWidth,
+        height: this.resizeMode === 'percent' ? this.image.height * (this.percentHeight / 100) : this.scaledHeight
+      });
+    },
+    applyResizeSettings() {
+      this.emitResizeEvent();
+      this.closeResizeDialog();
+    },
+    closeResizeDialog() {
+      this.$emit('update:resizeDialog', false);
+    },
+    setCanvasRef(canvas) {
+      this.canvas = canvas;
+    },
+    saveImage() {
+      const canvas = this.canvas;
+      const link = document.createElement('a');
+      link.download = 'image.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
-  };
-  </script>
+  },
+  watch: {
+    imageWidth(newWidth) {
+      this.scaledWidth = newWidth;
+      this.percentWidth = Math.round((this.scaledWidth / this.image.width) * 100);
+    },
+    imageHeight(newHeight) {
+      this.scaledHeight = newHeight;
+      this.percentHeight = Math.round((this.scaledHeight / this.image.height) * 100);
+    },
+    interpolation(val) {
+      this.$emit('interpolationChange', val);
+    }
+  }
+};
+</script>
+
+
 
 <style>
 .padding {

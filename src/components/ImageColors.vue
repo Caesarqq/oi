@@ -19,7 +19,7 @@
       </v-btn>
       <div v-show="isPanelOpen" class="panel-content">
         <v-btn
-          :color="currentTool === 'pipette' ? 'blue' : 'red'"
+          :color="currentTool === 'pipette' ? 'blue' : 'blue'"
           @click="selectTool('pipette')"
           class="pipette-btn"
         >
@@ -49,6 +49,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import colorConvert from 'color-convert';
 
@@ -63,6 +64,11 @@ export default {
       color2: this.createEmptyColor(),
       contrastRatio: 1,
       isPanelOpen: true,
+      isDragging: false,
+      startX: 0,
+      startY: 0,
+      offsetX: 0,
+      offsetY: 0
     };
   },
   methods: {
@@ -84,6 +90,12 @@ export default {
       } else {
         this.$emit('pipette-active', false);
         this.pixelSearchRef.removeEventListener('click', this.updateColor);
+      }
+
+      if (tool === 'hand') {
+        this.enableHandTool();
+      } else {
+        this.disableHandTool();
       }
     },
     togglePanel() {
@@ -121,6 +133,36 @@ export default {
       }
       this.calculateContrast();
     },
+    enableHandTool() {
+      window.addEventListener('mousedown', this.startDrag);
+      window.addEventListener('mousemove', this.onDrag);
+      window.addEventListener('mouseup', this.endDrag);
+    },
+    disableHandTool() {
+      window.removeEventListener('mousedown', this.startDrag);
+      window.removeEventListener('mousemove', this.onDrag);
+      window.removeEventListener('mouseup', this.endDrag);
+    },
+    startDrag(event) {
+      if (this.currentTool !== 'hand') return;
+      this.isDragging = true;
+      this.startX = event.clientX - this.offsetX;
+      this.startY = event.clientY - this.offsetY;
+    },
+    onDrag(event) {
+      if (!this.isDragging || this.currentTool !== 'hand') return;
+      this.offsetX = event.clientX - this.startX;
+      this.offsetY = event.clientY - this.startY;
+      this.updateCanvasPosition();
+    },
+    endDrag() {
+      if (this.currentTool !== 'hand') return;
+      this.isDragging = false;
+    },
+    updateCanvasPosition() {
+      const canvas = this.pixelSearchRef;
+      canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px)`;
+    },
     calculateLuminance(color) {
       const rgb = colorConvert.hex.rgb(color.hex);
       const [r, g, b] = rgb.map(c => {
@@ -140,6 +182,7 @@ export default {
   }
 };
 </script>
+
 <style>
 .pipette-panel {
   position: absolute;

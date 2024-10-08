@@ -147,10 +147,10 @@ export default {
       }
     },
     applyCurves() {
-      this.correctImage(); // Применяем коррекцию изображения
-      this.preview = false; // Отключаем режим предпросмотра, так как изменения применены
-      this.calculateHistograms(); // Пересчитываем гистограммы после изменения
-      this.renderHistogram(true); // Перерисовываем график
+      this.correctImage(); 
+      this.preview = false; 
+      this.calculateHistograms(); 
+      this.renderHistogram(true); 
     },
     closeResultDialog() {
       this.showResultDialog = false;

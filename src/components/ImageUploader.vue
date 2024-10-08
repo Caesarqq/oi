@@ -190,6 +190,7 @@ export default {
       this.calculatePixels();
       this.drawImageToCanvas();
     },
+    
     onInterpolationChange(method) {
       this.interpolation = method;
       this.drawImageToCanvas();
@@ -207,7 +208,18 @@ export default {
       link.href = canvas.toDataURL('image/png');
       link.download = 'resized_image.png';
       link.click();
+    },
+    updateImage(imageDataUrl) {
+      const img = new Image();
+      img.onload = () => {
+        this.image = img;
+        this.drawImageToCanvas();
+      };
+      img.src = imageDataUrl;
     }
+  },
+  mounted() {
+    this.$refs.imageSettings.setCanvasRef(this.$refs.pixelSearch);
   }
 };
 </script>

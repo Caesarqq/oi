@@ -202,19 +202,11 @@ export default {
   const ctx = canvas.getContext('2d');
   canvas.width = this.imageWidth;
   canvas.height = this.imageHeight;
-
-  // Сначала нарисуем исходное изображение на временном холсте
   ctx.drawImage(this.image, 0, 0, canvas.width, canvas.height);
-
-  // Копируем содержимое холста с примененными фильтрами
   const appliedCanvas = this.$refs.pixelSearch;
   const appliedCtx = appliedCanvas.getContext('2d');
   const imageData = appliedCtx.getImageData(0, 0, appliedCanvas.width, appliedCanvas.height);
-
-  // Наносим измененные пиксели на временный холст
   ctx.putImageData(imageData, 0, 0);
-
-  // Сохраняем изображение
   const link = document.createElement('a');
   link.href = canvas.toDataURL('image/png');
   link.download = 'filtered_image.png';

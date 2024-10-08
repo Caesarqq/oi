@@ -196,19 +196,30 @@ export default {
       this.drawImageToCanvas();
     },
     saveImage() {
-      if (!this.image) return;
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = this.imageWidth;
-      canvas.height = this.imageHeight;
+  if (!this.image) return;
 
-      ctx.drawImage(this.image, 0, 0, canvas.width, canvas.height);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = this.imageWidth;
+  canvas.height = this.imageHeight;
 
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = 'resized_image.png';
-      link.click();
-    },
+  // Сначала нарисуем исходное изображение на временном холсте
+  ctx.drawImage(this.image, 0, 0, canvas.width, canvas.height);
+
+  // Копируем содержимое холста с примененными фильтрами
+  const appliedCanvas = this.$refs.pixelSearch;
+  const appliedCtx = appliedCanvas.getContext('2d');
+  const imageData = appliedCtx.getImageData(0, 0, appliedCanvas.width, appliedCanvas.height);
+
+  // Наносим измененные пиксели на временный холст
+  ctx.putImageData(imageData, 0, 0);
+
+  // Сохраняем изображение
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'filtered_image.png';
+  link.click();
+},
     updateImage(imageDataUrl) {
       const img = new Image();
       img.onload = () => {
@@ -217,9 +228,6 @@ export default {
       };
       img.src = imageDataUrl;
     }
-  },
-  mounted() {
-    this.$refs.imageSettings.setCanvasRef(this.$refs.pixelSearch);
   }
 };
 </script>
